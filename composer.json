@@ -1,0 +1,43 @@
+{
+	"name": "tomzx/msn-log-parser",
+	"description": "Parse MSN log files in text and html format.",
+	"type": "library",
+	"keywords": [
+		"msn",
+		"log",
+		"parser"
+	],
+	"homepage": "https://github.com/tomzx/msn-log-parser",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Tom Rochette",
+			"email": "tom@tomrochette.com",
+			"homepage": "http://www.tomrochette.com"
+		}
+	],
+	"support": {
+		"issues": "https://github.com/tomzx/msn-log-parser/issues"
+	},
+	"require": {
+		"php": ">=5.4.0"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "~4"
+	},
+	"autoload": {
+		"psr-4": {
+			"tomzx\\MSNLogParser\\": "src/tomzx/MSNLogParser"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"tomzx\\MSNLogParser\\Test\\": "tests/tomzx/MSNLogParser"
+		}
+	},
+	"extra": {
+		"branch-alias": {
+			"dev-master": "0.1-dev"
+		}
+	}
+}
