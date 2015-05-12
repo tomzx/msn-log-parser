@@ -17,7 +17,8 @@ class Html
 		$sessionDate = null;
 		$participants = [];
 		$mappedParticipants = [];
-		$messages = [];
+		$sessions = [];
+		$session = [];
 		$state = 'init';
 
 		foreach ($lines as $line) {
@@ -26,11 +27,12 @@ class Html
 					$sessionDate = null;
 					$participants = [];
 					$mappedParticipants = [];
-					$messages = [];
+					$session = [];
 					$state = 'header-date';
 				case 'header-date':
 					if (preg_match('/<div class="mplsession" id="Session_(?<year>.*)-(?<month>.*)-(?<day>.*)T/', $line, $matches)) {
 						$sessionDate = mktime(0, 0, 0, $matches['month'], $matches['day'], $matches['year']);
+						$session['date'] = $sessionDate;
 						$state = 'header-participants';
 					}
 					break;
@@ -39,6 +41,7 @@ class Html
 						$nick = $matches['nick'];
 						$email = $matches['email'];
 						$participants[$email] = $nick;
+						$session['participants'][$email] = $nick;
 					} elseif (strpos($line, '</ul>') !== false) {
 						$state = 'body';
 					}
@@ -51,13 +54,22 @@ class Html
 						$matches['message'] = str_replace('&nbsp;', ' ', $matches['message']);
 						$matches['message'] = preg_replace('/<img.*alt="(.*)"\/>/', '$1', $matches['message']);
 
-						echo '['.date('Y-m-d', $sessionDate).'T'.$matches['time'].'] ('.$mappedParticipants[$partialNick].') '.$matches['partialNick'].' : '.$matches['message'].PHP_EOL;
+						//echo '['.date('Y-m-d', $sessionDate).'T'.$matches['time'].'] ('.$mappedParticipants[$partialNick].') '.$matches['partialNick'].' : '.$matches['message'].PHP_EOL;
+						$session['messages'][] = [
+							'time' => $matches['time'],
+							'email' => $mappedParticipants[$partialNick],
+							'partial-nick' => $matches['partialNick'],
+							'message' => $matches['message'],
+						];
 					} elseif (strpos($line, '</div>') !== false) {
+						$sessions[] = $session;
 						$state = 'init';
 					}
 					break;
 			}
 		}
+
+		return $sessions;
 	}
 
 	protected static function mapParticipant(array $currentMapping, array $participants, $partialNick)

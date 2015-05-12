@@ -16,7 +16,8 @@ class Text
 
 		$sessionDate = null;
 		$participants = [];
-		$messages = [];
+		$sessions = [];
+		$session = [];
 		$state = 'init';
 
 		foreach ($lines as $line) {
@@ -25,12 +26,13 @@ class Text
 				case 'init':
 					$sessionDate = null;
 					$participants = [];
-					$messages = [];
+					$session = [];
 					$state = 'header-date';
 				case 'header-date':
 					if (preg_match('/Début de la session : (?<day>\S+) (?<month>\S+) (?<year>\S+)/', $line, $matches)) {
 						$formattedDate = $matches['year'].'-'.$this->fullMonthNameToNumber($matches['month']).'-'.$matches['day'];
 						$sessionDate = strtotime($formattedDate); // Convert month to number
+						$session['date'] = $sessionDate;
 						$state = 'header-participants';
 					}
 					break;
@@ -39,6 +41,7 @@ class Text
 						$partialNick = $matches['nick'];
 						$email = $matches['email'];
 						$participants[$email] = $partialNick;
+						$session['participants'][$email] = $partialNick;
 					} elseif (preg_match('/Participants :/', $line, $matches)) {
 						// Stay in the same state
 					} else {
@@ -51,32 +54,46 @@ class Text
 						$nick = $matches['nick'];
 						$message = $matches['message'];
 
-						if ( ! empty($messages)) {
-							$entry = $messages[sizeof($messages) - 1];
-							echo '['.date('Y-m-d', $sessionDate).'T'.$entry['time'].'] '.$entry['nick'].': '.$entry['message'].PHP_EOL;
-						}
-
-						$messages[] = [
-							'time' => $time,
-							'nick' => $nick,
-							'message' => $message
-						];
+						$this->pushMessage($session, $time, null, $nick, $message);
+					} elseif (preg_match('/\[(?<time>\S+)\] (?<message>\* (?<nick>.*)( est maintenant (?<newState>.*))?)/', $line, $matches)) {
+						$time = $matches['time'];
+						$nick = $matches['nick'];
+						$message = $matches['message'];
+						$this->pushMessage($session, $time, null, $nick, $message);
 					} elseif (strpos($line, '.--------------------------------------------------------------------.') !== false) {
+						$sessions[] = $session;
 						$state = 'init';
 					} elseif (preg_match('/           (?<message>.*)/', $line, $matches)) {
 						// continuation of previous message
 						$message = $matches['message'];
-						$messages[sizeof($messages) - 1]['message'] .= ' '.$message;
+						$session['messages'][sizeof($session['messages']) - 1]['message'] .= ' '.$message;
 					}
 					break;
 			}
-			// echo $initialState.' -> '.$state.PHP_EOL;
 		}
 
-		if ( ! empty($messages)) {
-			$entry = $messages[sizeof($messages) - 1];
-			echo '['.date('Y-m-d', $sessionDate).'T'.$entry['time'].'] '.$entry['nick'].': '.$entry['message'].PHP_EOL;
+		if ( ! empty($session)) {
+			$sessions[] = $session;
 		}
+
+		return $sessions;
+	}
+
+	/**
+	 * @param string $session
+	 * @param int $time
+	 * @param string $email
+	 * @param string $partialNick
+	 * @param string $message
+	 */
+	protected function pushMessage(&$session, $time, $email, $partialNick, $message)
+	{
+		$session['messages'][] = [
+			'time' => $time,
+			'email' => $email, // TODO: Resolve to the corresponding email address
+			'partial-nick' => $partialNick,
+			'message' => $message,
+		];
 	}
 
 	/**
