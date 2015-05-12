@@ -15,6 +15,8 @@ class HtmlTest extends \PHPUnit_Framework_TestCase
 	{
 		parent::setUp();
 
+		date_default_timezone_set('UTC');
+
 		$this->parser = new Html();
 	}
 
@@ -27,7 +29,7 @@ class HtmlTest extends \PHPUnit_Framework_TestCase
 	{
 		$expected = [
 			[
-				'date' => 1176955200,
+				'date' => 1176940800,
 				'participants' => [
 					'a@hotmail.com' => 'abcd',
 					'01234567890abcdef0@hotmail.com' => '01234567890abcdef0',
@@ -42,7 +44,7 @@ class HtmlTest extends \PHPUnit_Framework_TestCase
 				],
 			],
 			[
-				'date' => 1177300800,
+				'date' => 1177286400,
 				'participants' => [
 					'a@hotmail.com' => 'abcd',
 					'01234567890abcdef0@hotmail.com' => '01234567890abcdef0',

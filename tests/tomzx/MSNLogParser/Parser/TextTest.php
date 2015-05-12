@@ -15,6 +15,8 @@ class TextTest extends \PHPUnit_Framework_TestCase
 	{
 		parent::setUp();
 
+		date_default_timezone_set('UTC');
+
 		$this->parser = new Text();
 	}
 
@@ -27,7 +29,7 @@ class TextTest extends \PHPUnit_Framework_TestCase
 	{
 		$expected = [
 			[
-				'date' => 1072414800,
+				'date' => 1072396800,
 				'participants' => [
 					'abc@hotmail.com' => 'a1b2c3d4e5f6g7',
 					'def@hotmail.com' => 'b2c3d4e5f6g7h8',
@@ -60,7 +62,7 @@ class TextTest extends \PHPUnit_Framework_TestCase
 				],
 			],
 			[
-				'date' => 1072501200,
+				'date' => 1072483200,
 				'participants' => [
 					'abc@hotmail.com' => 'a1b2c3d4e5f6g7',
 					'def@hotmail.com' => 'b2c3d4e5f6g7h8',
