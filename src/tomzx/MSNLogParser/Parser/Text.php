@@ -61,6 +61,7 @@ class Text
 						$message = $matches['message'];
 						$this->pushMessage($session, $time, null, $nick, $message);
 					} elseif (strpos($line, '.--------------------------------------------------------------------.') !== false) {
+						$this->finishSession($session);
 						$sessions[] = $session;
 						$state = 'init';
 					} elseif (preg_match('/           (?<message>.*)/', $line, $matches)) {
@@ -73,6 +74,7 @@ class Text
 		}
 
 		if ( ! empty($session)) {
+			$this->finishSession($session);
 			$sessions[] = $session;
 		}
 
@@ -94,6 +96,54 @@ class Text
 			'partial-nick' => $partialNick,
 			'message' => $message,
 		];
+	}
+
+	protected function finishSession(&$session)
+	{
+		$this->setMessagesEmails($session);
+	}
+
+	protected function setMessagesEmails(&$session)
+	{
+		$mappedParticipants = $this->mapParticipants($session['participants'], $session['messages']);
+
+		foreach ($session['messages'] as &$message) {
+			$partialNick = $message['partial-nick'];
+			$message['email'] = $mappedParticipants[$partialNick];
+		}
+	}
+
+	protected function mapParticipants($participants, $messages)
+	{
+		// Go through all messages and find nicks we will have to map
+		$partialNicksToMap = [];
+		foreach ($messages as $message) {
+			$partialNick = $message['partial-nick'];
+			$partialNicksToMap[$partialNick] = null;
+		}
+
+		// Try to figure out which nick belongs to whom
+		foreach ($partialNicksToMap as $partialNick => $unknown) {
+			$nickSimilarity = [];
+			foreach ($participants as $email => $participant) {
+				if (strpos($participant, $partialNick) === 0) {
+					$partialNicksToMap[$partialNick] = $email;
+					$nickSimilarity = [];
+					break;
+				}
+
+				$nickSimilarity[$email] = similar_text($participant, $partialNick);
+			}
+
+			if ( ! empty($nickSimilarity)) {
+				arsort($nickSimilarity);
+				// Assume email at index = 0 is the best match
+				$emails = array_keys($nickSimilarity);
+				$partialNicksToMap[$partialNick] = $emails[0];
+			}
+		}
+
+		return $partialNicksToMap;
 	}
 
 	/**

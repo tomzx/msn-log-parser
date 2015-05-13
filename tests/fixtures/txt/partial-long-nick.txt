@@ -1,0 +1,8 @@
+.--------------------------------------------------------------------.
+| Début de la session : 26 décembre 2003                             |
+| Participants :                                                     |
+|    ... some extremely long nickname that is long (abc@hotmail.com) |
+|    b (def@hotmail.com)                                             |
+.--------------------------------------------------------------------.
+[23:00:21] this is some: test
+[23:00:22] b: test
