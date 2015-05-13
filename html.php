@@ -3,4 +3,4 @@
 require 'vendor/autoload.php';
 
 $htmlParser = new tomzx\MSNLogParser\Parser\Html();
-$htmlParser->parse($argv[1]);
+echo json_encode($htmlParser->parse($argv[1]), JSON_PRETTY_PRINT);
